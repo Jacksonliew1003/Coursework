@@ -1,6 +1,7 @@
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -8,33 +9,41 @@ public class Parallel_Code {
 
     public static void main(String[] args) throws IOException{
 
+        Scanner input = new Scanner(System.in);
+        System.out.println("Enter the name of the zip file you want: ");
+        String compressName = input.nextLine();
+
         List<String> filesSource = new ArrayList<>();
-        filesSource.add("src/Text_Folder/Text1.txt");
-        filesSource.add("src/Text_Folder/Text2.txt");
-        filesSource.add("src/Text_Folder/Text3.txt");
-        filesSource.add("src/Text_Folder/Text4.txt");
-        filesSource.add("src/Text_Folder/Text5.txt");
+        filesSource.add("src/PDF_Folder/PDF1.pdf");
+        filesSource.add("src/PDF_Folder/PDF2.pdf");
+        filesSource.add("src/PDF_Folder/PDF3.pdf");
+        filesSource.add("src/PDF_Folder/PDF4.pdf");
+        filesSource.add("src/PDF_Folder/PDF5.pdf");
         filesSource.add("src/Image_Folder/Image1.png");
         filesSource.add("src/Image_Folder/Image2.png");
         filesSource.add("src/Image_Folder/Image3.png");
         filesSource.add("src/Image_Folder/Image4.png");
         filesSource.add("src/Image_Folder/Image5.png");
-        filesSource.add("src/Video_Folder/Video.mp4");
-        System.out.println("=== File loaded successfully! ===\n");
+        filesSource.add("src/Video_Folder/Video1.mp4");
+        filesSource.add("src/Video_Folder/Video2.mp4");
+        filesSource.add("src/Video_Folder/Video3.mp4");
+        filesSource.add("src/Video_Folder/Video4.mp4");
+        filesSource.add("src/Video_Folder/Video5.mp4");
+
+        System.out.println("==================================================\n");
 
         try{
-            compressFolder(filesSource);
+            compressFolder(filesSource,compressName);
         } catch (FileNotFoundException fnfe) {
             System.err.println("File Loading Error!");
         }
 
     }
 
-    public static void compressFolder(List<String> filesSource) throws IOException{
+    public static void compressFolder(List<String> filesSource, String compressName) throws IOException {
 
-        System.out.println("=== Parallel Processing ===");
-        filesSource.parallelStream().forEach(System.out::println);
-        FileOutputStream fos = new FileOutputStream("New_Compressed_Folder.zip");
+        long startTime = System.currentTimeMillis();
+        FileOutputStream fos = new FileOutputStream(compressName + ".zip");
         ZipOutputStream zos = new ZipOutputStream(fos);
 
         System.out.println("\n==========================================");
@@ -42,7 +51,6 @@ public class Parallel_Code {
         System.out.println("The zip file has been created!");
 
         for (String fileSource : filesSource) {
-            long startTime = System.nanoTime();
             File compressZip = new File(fileSource);
             FileInputStream fis = new FileInputStream(compressZip);
             ZipEntry ze = new ZipEntry(compressZip.getName());
@@ -51,20 +59,16 @@ public class Parallel_Code {
 
             int length;
             while ((length = fis.read(bytes)) >= 0) {
-                zos.write(bytes, 0,length);
+                zos.write(bytes, 0, length);
             }
-
-            System.out.println(fileSource);
-            long endTime = System.nanoTime();
-            System.out.printf("Processing Time: %f ms\n\n", (float)(endTime - startTime) / 1000000);
-
             fis.close();
-
         }
+
         zos.close();
         fos.close();
+        long endTime = System.currentTimeMillis();
+        System.out.printf("Processing Time: %f s\n\n", (double) (endTime - startTime) / 1000);
         System.out.println("Compress Data Done!");
 
     }
-
 }
