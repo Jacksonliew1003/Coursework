@@ -14,10 +14,10 @@ public class Parallel_Code_Version3 {
         System.out.println("Enter the name of the zip file you want: ");
         String compressName = input.nextLine();
 
-        File fileSource = new File("src/Folder");
+        File fileSource = new File("src/Text_Folder");
         File[] filesList = fileSource.listFiles();
 
-        int numberOfThread = 2;
+        int numberOfThread = 5;
         Thread[] threadArray = new Thread[numberOfThread];
 
         final int filesOnEachThread = filesList.length / numberOfThread;
@@ -39,7 +39,9 @@ public class Parallel_Code_Version3 {
                 } catch (FileNotFoundException fnfe) {
                     System.err.println("File Loading Error!");
                 } catch (IOException e) {
-                    throw new RuntimeException(e);
+//                    JH: Handle IOException instead of throw
+                    RuntimeException re = new RuntimeException(e);
+                    System.err.println("Error when running processingThread()\n" + re.getMessage());
                 }
             });
         }
@@ -62,6 +64,7 @@ public class Parallel_Code_Version3 {
         List<File> fileInput = new ArrayList<>();
         FileOutputStream fos = new FileOutputStream(compressName + ".zip");
         ZipOutputStream zos = new ZipOutputStream(fos);
+//        JH: 这段code会导致重复丢Text2.txt进thread
         for (int i = thread * filesOnEachThread; i < (thread+1) * filesOnEachThread; i++){
             fileInput.add(filesList[i]);
 
@@ -69,19 +72,26 @@ public class Parallel_Code_Version3 {
                 fileInput.addAll(Arrays.asList(filesList).subList(filesList.length - remainingFiles, filesList.length));
             }
         }
+//        JH: 我在这段code加入了handling IOException，如果有重复的文件被丢进thread，这边会display error
         for (File file: fileInput){
-            File compressZip = new File(String.valueOf(file));
-            FileInputStream fis = new FileInputStream(compressZip);
-            ZipEntry ze = new ZipEntry(compressZip.getName());
-            zos.putNextEntry(ze);
-            byte[] bytes = new byte[1024];
+            try {
+                File compressZip = new File(String.valueOf(file));
+                FileInputStream fis = new FileInputStream(compressZip);
+                ZipEntry ze = new ZipEntry(compressZip.getName());
+                zos.putNextEntry(ze);
+                byte[] bytes = new byte[1024];
 
-            int length;
-            while ((length = fis.read(bytes)) >= 0) {
-                zos.write(bytes, 0, length);
+                int length;
+                while ((length = fis.read(bytes)) >= 0) {
+                    zos.write(bytes, 0, length);
+                }
+                fis.close();
+                System.out.println("Processing " + file.getName() + " in thread " + Thread.currentThread().getName());
+            } catch (IOException ioe) {
+                RuntimeException re = new RuntimeException(ioe);
+                System.err.println("Error from processingThread():\n" + re.getMessage());
             }
-            fis.close();
-            System.out.println("Processing " + file.getName() + " in thread " + Thread.currentThread().getName());
+
 
         }
         zos.close();
