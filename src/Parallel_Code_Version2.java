@@ -6,21 +6,19 @@ public class Parallel_Code_Version2 {
 
     public static void main(String[] args) {
 
-//        JH: 修改成text_folder来获取较多的file
-        File filePath = new File("src/Text_Folder");
-        File[] filesList = filePath.listFiles();
+
+        File filePath = new File("src/Video_Folder");
+        File filesList[] = filePath.listFiles();
 
         int numberOfThreads = 5;
-        Thread[] threadArray = new Thread[numberOfThreads];
+        Thread[] threads = new Thread[numberOfThreads];
 
         final int filesPerThread = filesList.length/numberOfThreads;
         final int remaingFiles = filesList.length%numberOfThreads;
 
-//        JH: Declare thread
         for (int t = 0; t < numberOfThreads; t++) {
             int thread = t;
-//            JH: Name change to "threadArray" easy for understand
-            threadArray[t] = new Thread() {
+            threads[t] = new Thread() {
                 @Override
                 public void run() {
                     runThread(filesList, numberOfThreads, thread, filesPerThread, remaingFiles);
@@ -28,11 +26,11 @@ public class Parallel_Code_Version2 {
             };
         }
 
-        for (Thread t1 : threadArray){
+        for (Thread t1 : threads){
             t1.start();
         }
 
-        for (Thread t2 : threadArray){
+        for (Thread t2 : threads){
             try{
                 t2.join();
             }catch (InterruptedException ie){
@@ -42,7 +40,6 @@ public class Parallel_Code_Version2 {
 
     }
 
-//    JH: 显示"当前处理的file"和"使用哪个thread"
     private static void runThread(File[] filesList, int numberOfThreads, int thread, int filesPerThread, int remainingFiles) {
         List<File> inFiles = new ArrayList<>();
         for (int i = thread*filesPerThread; i < (thread+1)*filesPerThread; i++){
